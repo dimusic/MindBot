@@ -94,7 +94,34 @@ class HelpCommand(CommandBase):
 
 class WeatherCommand(CommandBase):
     name = '/weather'
-    prefix = '🌤  Current weather: \n\n'
+    owmIconToEmojiMap = {
+        '01d': ☀️,
+        '01n': ☀️,
+        '02d': 🌤,
+        '02n': 🌤,
+        '03d': ⛅️,
+        '03n': ⛅️,
+        '04d': 🌥,
+        '04n': 🌥,
+        '09d': 🌧,
+        '09n': 🌧,
+        '10d': 🌦,
+        '10n': 🌦,
+        '11d': ⛈,
+        '11n': ⛈,
+        '13d': 🌨,
+        '13n': 🌨,
+        '50d': 🌫,
+        '50n': 🌫
+    }
+    prefix = 'Current weather: \n\n'
+    
+    def getWeatherEmoji(weather):
+        iconId = weather.get_weather_icon_name();
+        if (owmIconToEmojiMap[iconId]):
+            return owmIconToEmojiMap[iconId]
+        
+        return ''
 
     def __call__(self, *args, **kwargs):
         super().__call__(*args, **kwargs)
@@ -112,6 +139,9 @@ class WeatherCommand(CommandBase):
                 humidity = weather.get_humidity()
                 pressure = weather.get_pressure()
                 text = WEATHER_TEXT.format(city, status, temperature['temp'], wind['speed'], humidity, pressure['press'])
+                
+                self.prefix = self.getWeatherEmoji(weather) + ' ' + self.prefix
+                
                 return self.send_telegram_message(text=text)
         else:
             return self.send_telegram_message('Please pecify location')
